@@ -27,7 +27,7 @@ namespace RedMoon.Camera
 
             if (playerController == null)
             {
-                playerController = FindFirstObjectByType<PlayerController>();
+                playerController = FindAnyObjectByType<PlayerController>();
             }
 
             StartCoroutine(RunVerificationRoutine());
@@ -166,3 +166,4 @@ namespace RedMoon.Camera
         }
     }
 }
+

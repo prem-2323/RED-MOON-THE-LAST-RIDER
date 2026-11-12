@@ -21,7 +21,7 @@ namespace RedMoon.Player
         {
             if (player == null)
             {
-                player = FindFirstObjectByType<PlayerController>();
+                player = FindAnyObjectByType<PlayerController>();
             }
 
             if (player != null && logStateChanges)
