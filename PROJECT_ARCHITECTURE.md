@@ -1,6 +1,6 @@
 # RED MOON: THE LAST RIDER — Project Architecture
 
-**Document status:** Phase 2 complete (Main Character Foundation, Locomotion & Animation)  
+**Document status:** Phase 3.2 complete (Camera Foundation & Configuration)  
 **Engine:** Unity 6.6 (`6000.6.8f1`)  
 **Pipeline:** URP `17.6.0`  
 **Input:** Unity Input System `1.20.1`  
@@ -91,6 +91,8 @@ Assets/
       Quality/
       Audio/
         REDMOON_AudioMixer.mixer
+      Camera/
+        Camera_Config.asset
     UI/
       Menus/
       HUD/
@@ -123,6 +125,7 @@ Assets/
 | `Settings/Input` | Input Actions and control-scheme assets. |
 | `Settings/Quality` | Reserved for future quality presets beyond the URP assets. |
 | `Settings/Audio` | Audio mixer and future mixer snapshots. |
+| `Settings/Camera` | Camera configuration and presets. |
 | `UI/*` | UI documents, stylesheets, sprites and prefabs. |
 
 The two URP-generated assets at the `Assets/` root are intentionally left in

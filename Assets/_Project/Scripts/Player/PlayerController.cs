@@ -38,6 +38,31 @@ namespace RedMoon.Player
         public Vector3 LastMoveDirection => _lastMoveDirection;
         public float TurnAngle => _turnAngle;
         public bool HasCamera => cameraTransform != null;
+        public Transform CameraTransform
+        {
+            get => cameraTransform;
+            set => cameraTransform = value;
+        }
+
+        /// <summary>
+        /// Explicitly assigns the camera transform used for camera-relative steering.
+        /// If null is passed, safely falls back to Camera.main if available.
+        /// </summary>
+        public void SetCamera(Transform targetCamera)
+        {
+            if (targetCamera != null)
+            {
+                cameraTransform = targetCamera;
+            }
+            else if (Camera.main != null)
+            {
+                cameraTransform = Camera.main.transform;
+            }
+            else
+            {
+                cameraTransform = null;
+            }
+        }
 
         /// <summary>
         /// When true, Update() does not apply input or gravity. Editor tests can

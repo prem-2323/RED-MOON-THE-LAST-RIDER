@@ -234,7 +234,7 @@ namespace RedMoon.Editor
             var cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
             cameraObject.layer = LayerMask.NameToLayer("Default");
-            var camera = cameraObject.AddComponent<Camera>();
+            var camera = cameraObject.AddComponent<UnityEngine.Camera>();
             camera.fieldOfView = 60f;
             camera.nearClipPlane = 0.1f;
             camera.farClipPlane = 100f;

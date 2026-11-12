@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c601716884a4f534399ccd3e14bff52f, type: 3}
+  m_Name: Camera_Config
+  m_EditorClassIdentifier: RedMoon.Camera::RedMoon.Camera.CameraConfig
+  focusOffset: {x: 0, y: 1.4, z: 0}
+  defaultShoulderOffset: 0.45
+  leftShoulderOffset: -0.45
+  shoulderDamping: 4
+  defaultDistance: 3.2
+  minDistance: 1.5
+  maxDistance: 5
+  zoomSpeed: 2
+  yawSensitivity: 120
+  pitchSensitivity: 100
+  invertY: 0
+  minPitch: -35
+  maxPitch: 65
+  positionSmoothing: 0.08
+  rotationSmoothing: 0.04
+  collisionRadius: 0.2
+  collisionPadding: 0.15
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 12288
+  defaultFOV: 60
+  sprintFOV: 64
+  fovBlendSpeed: 3

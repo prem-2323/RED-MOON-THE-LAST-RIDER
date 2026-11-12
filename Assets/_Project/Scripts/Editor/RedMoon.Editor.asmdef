@@ -4,6 +4,7 @@
     "references":  [
                        "RedMoon.Core",
                        "RedMoon.Player",
+                       "RedMoon.Camera",
                        "Unity.InputSystem",
                        "Unity.RenderPipelines.Core.Runtime",
                        "Unity.RenderPipelines.Universal.Runtime"

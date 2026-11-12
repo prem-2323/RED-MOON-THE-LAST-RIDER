@@ -514,6 +514,32 @@ conflicts. No force-push or hard reset was used.
 
 ---
 
+## 2026-11-12 — Phase 3.2: Camera Foundation & Configuration
+
+**Status:** Complete
+
+### Implemented
+- **Assembly Normalization:** Validated `RedMoon.Camera.asmdef` and normalized `includePlatforms` to `[]`. Added `RedMoon.Camera` reference to `RedMoon.Editor.asmdef`.
+- **Camera Configuration Data (`CameraConfig.cs`):** Created ScriptableObject in `Assets/_Project/Scripts/Camera/` under namespace `RedMoon.Camera`. Tunable parameters:
+  - Focus Offset: `(0, 1.4, 0)`
+  - Shoulder offsets: Default right `0.45m`, left `-0.45m`, transition damping `4.0 /s`
+  - Distance & Zoom: Default `3.2m`, min `1.5m`, max `5.0m`, zoom speed `2.0 m/s`
+  - Orbit & Rotation: Yaw sensitivity `120°/s`, pitch sensitivity `100°/s`, pitch range `[-35°, 65°]`, invert Y `false`
+  - Damping: Position smoothing `0.08s`, rotation smoothing `0.04s`
+  - Collision & Obstruction: SphereCast radius `0.2m`, padding `0.15m`, layers `Environment` (12) and `Ground` (13)
+  - FOV Modulation: Default `60°`, sprint `64°`, blend speed `3.0 /s`
+- **Configuration Asset:** Generated canonical asset `Assets/_Project/Settings/Camera/Camera_Config.asset`.
+- **PlayerController Dependency Injection:** Added `CameraTransform` property and `SetCamera(Transform targetCamera)` method to `PlayerController.cs`. Preserved safe automatic fallback to `Camera.main`. Completely decoupled from `RedMoon.Camera` to avoid circular assembly dependencies.
+- **Editor Tooling:** Created `CameraPhase3Builder.cs` in `Assets/_Project/Scripts/Editor/` with menu item `RED MOON/Camera/Create Camera Config`. Disambiguated `UnityEngine.Camera` in `PlayerPhase2Builder.cs`.
+
+### Verified
+- C# compilation: 0 errors, 0 warnings.
+- Play Mode regression in `PlayerTest.unity`: clean console (0 errors, 0 warnings).
+- Play Mode regression in `Bootstrap.unity`: clean console (0 errors, 0 warnings), build index 0 preserved.
+- Zero circular assembly dependencies between `RedMoon.Player` and `RedMoon.Camera`.
+
+---
+
 ## Template for Future Entries
 
 ```
