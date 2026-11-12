@@ -63,6 +63,38 @@ namespace RedMoon.Editor
             harnessSo.FindProperty("playerController").objectReferenceValue = player.GetComponent<RedMoon.Player.PlayerController>();
             harnessSo.ApplyModifiedProperties();
 
+            // Ensure test obstacles in scene
+            var obstacles = GameObject.Find("Test_Obstacles");
+            if (obstacles == null)
+            {
+                obstacles = new GameObject("Test_Obstacles");
+                int envLayer = LayerMask.NameToLayer("Environment");
+
+                var wallNorth = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                wallNorth.name = "Test_Wall_North";
+                wallNorth.transform.SetParent(obstacles.transform, false);
+                wallNorth.transform.position = new Vector3(0f, 1.5f, 2.5f);
+                wallNorth.transform.localScale = new Vector3(8f, 3f, 0.5f);
+                wallNorth.layer = envLayer;
+                wallNorth.tag = "Environment";
+
+                var wallCorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                wallCorner.name = "Test_Wall_Corner";
+                wallCorner.transform.SetParent(obstacles.transform, false);
+                wallCorner.transform.position = new Vector3(2.5f, 1.5f, 1.25f);
+                wallCorner.transform.localScale = new Vector3(0.5f, 3f, 3f);
+                wallCorner.layer = envLayer;
+                wallCorner.tag = "Environment";
+
+                var wallWest = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                wallWest.name = "Test_Wall_West";
+                wallWest.transform.SetParent(obstacles.transform, false);
+                wallWest.transform.position = new Vector3(-1.8f, 1.5f, 0f);
+                wallWest.transform.localScale = new Vector3(0.5f, 3f, 5f);
+                wallWest.layer = envLayer;
+                wallWest.tag = "Environment";
+            }
+
             UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene);
             Debug.Log("[RED MOON] Configured CameraController on Main Camera in " + TestScenePath);
         }

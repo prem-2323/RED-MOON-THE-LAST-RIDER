@@ -1,6 +1,6 @@
 # RED MOON: THE LAST RIDER — Project Architecture
 
-**Document status:** Phase 3.3 complete (Third-Person Camera Motor & Orbit Implementation)  
+**Document status:** Phase 3.4 complete (Camera Collision, Shoulder Switching & Dynamic FOV)  
 **Engine:** Unity 6.6 (`6000.6.8f1`)  
 **Pipeline:** URP `17.6.0`  
 **Input:** Unity Input System `1.20.1`  
@@ -291,6 +291,34 @@ systems are responsible for interpreting input.
 3. Add keyboard/mouse and gamepad bindings with the matching scheme group.
 4. Add a typed property to `RedMoonInput` if gameplay must consume it.
 5. Do not read devices directly from gameplay code.
+
+---
+
+## 5b. Camera System Architecture
+
+### Design Philosophy
+- **Dedicated Custom C# Motor:** Standardized custom third-person orbital camera motor (`CameraController.cs` in `RedMoon.Camera` assembly). No external Cinemachine dependencies.
+- **World-Space Independence:** Operates independently from character rotation in world space, eliminating orientation feedback loops. Injects its transform into `PlayerController.SetCamera(transform)` for camera-relative steering.
+- **Execution Timing:** Updates strictly in `LateUpdate()` to ensure player locomotion and root motion updates are finalized before camera placement.
+
+### Configuration (`CameraConfig.cs`)
+Tunable ScriptableObject parameters at `Assets/_Project/Settings/Camera/Camera_Config.asset`:
+- **Framing & Offset:** Focus offset `(0, 1.4, 0)`, right shoulder `+0.45m`, left shoulder `-0.45m`, shoulder damping `4.0 m/s`.
+- **Distance & Zoom:** Default resting distance `3.2m`, min distance `1.5m`, max distance `5.0m`, zoom speed `2.0 m/s`.
+- **Orbit & Sensitivity:** Yaw sensitivity `120°/s`, pitch sensitivity `100°/s`, pitch clamping `[-35°, 65°]`.
+- **Damping:** Position follow smoothing `0.08s`, rotation smoothing `0.04s`.
+- **Collision & Obstruction:** SphereCast radius `0.2m`, safety padding `0.15m`, layers `Environment` (12) and `Ground` (13).
+- **Dynamic FOV:** Default FOV `60°`, sprint FOV `64°`, blend speed `3.0 /s`.
+
+### Collision & Obstruction Avoidance
+- **SphereCast Line-of-Sight Query:** Casts a sphere along the view vector from camera pivot to resting distance against `Environment` (12) and `Ground` (13) layers with `QueryTriggerInteraction.Ignore`.
+- **Asymmetric Smoothing:** Rapid retraction (`Mathf.MoveTowards` at 25 m/s) when obstructions are detected to prevent clipping; smooth recovery (`Mathf.SmoothDamp` over 0.2s) when clear.
+- **Lateral Wall Safety:** Performs a lateral SphereCast before applying shoulder offsets to ensure camera pivot never clips through walls when standing sideways against obstacles.
+- **Zero GC Allocations:** All raycast operations use non-allocating structs and queries.
+
+### Dynamic Features
+- **Shoulder Switching:** Driven by canonical `SwitchShoulder` input action (`<Keyboard>/c` and `<Gamepad>/rightStickPress`). Seamlessly transitions between right and left shoulders at 4.0 m/s (225ms transition).
+- **Dynamic FOV Modulation:** Reads `PlayerController.CurrentState == PlayerState.Sprinting`. Exponentially blends from `60°` to `64°` during sprints, restoring to `60°` when sprinting ceases.
 
 ---
 

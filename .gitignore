@@ -56,3 +56,6 @@ desktop.ini
 # Temporary files
 *.tmp
 *.bak
+
+# Unity 6 package cache
+/[Pp]roject[Ss]ettings/[Pp]ackages/

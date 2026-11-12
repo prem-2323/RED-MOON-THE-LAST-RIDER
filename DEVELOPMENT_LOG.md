@@ -588,6 +588,53 @@ conflicts. No force-push or hard reset was used.
 
 ---
 
+## 2026-11-12 — Phase 3.4: Camera Collision, Shoulder Switching & Dynamic FOV
+
+**Status:** Complete
+
+### Implemented
+- **SphereCast Obstruction Detection (`CameraController.cs`):**
+  - Line-of-sight obstruction query using `Physics.SphereCast` against `Environment` (12) and `Ground` (13) layers with `QueryTriggerInteraction.Ignore`.
+  - Collision parameters: radius `0.2m` (`config.collisionRadius`), safety margin padding `0.15m` (`config.collisionPadding`).
+  - Fallback `Physics.Raycast` for thin geometry and edge cases.
+  - Zero garbage collection allocation in `LateUpdate()`.
+  - Rapid retraction (`Mathf.MoveTowards` at 25 m/s) to prevent visible wall or corner penetration.
+  - Smooth distance restoration (`Mathf.SmoothDamp` over 0.2s) when obstruction clears.
+  - Additional `Physics.CheckSphere` non-penetration safety verification.
+- **Dynamic Shoulder Switching (`CameraController.cs`):**
+  - Integrated canonical `SwitchShoulder` Input Action (`<Keyboard>/c` and `<Gamepad>/rightStickPress`).
+  - Framing offsets: Right (`+0.45m`, default) and Left (`-0.45m`).
+  - Smooth linear transition using `Mathf.MoveTowards` at `config.shoulderDamping` (4.0 m/s), yielding a 225ms cinematic slide.
+  - Safe lateral wall SphereCast to clamp shoulder offset and prevent camera pivot penetration when standing adjacent to walls.
+- **Dynamic FOV Modulation (`CameraController.cs`):**
+  - Reads `playerController.CurrentState == PlayerState.Sprinting`.
+  - Smooth exponential interpolation between default FOV (`60°`) and sprint FOV (`64°`) at blend rate `3.0 /s` (`config.fovBlendSpeed`).
+  - Seamlessly restores `60°` when sprinting ceases without altering player locomotion speeds.
+- **Automated QA Test Suite (`CameraTestHarness.cs`):**
+  - 12 comprehensive automated tests in Play Mode:
+    1. PlayerController binding: PASS
+    2. Mouse orbital look: PASS (ΔYaw=71.97°, ΔPitch=29.99°, ΔPos=3.03m)
+    3. Gamepad orbital look: PASS (ΔYaw=11.97°, ΔPitch=7.99°, ΔPos=0.37m)
+    4. Pitch clamping: PASS (within `[-35°, 65°]`)
+    5. World-space focus follow: PASS (Focus shift=1.97m)
+    6. Dynamic FOV modulation: PASS (Idle 60.0° -> Sprint 63.1° -> Restored 60.5°)
+    7. Shoulder switching: PASS (Right 0.45m -> Left -0.45m -> Restored 0.45m, repeated & moving)
+    8. Wall collision retraction: PASS (Obstructed=True, Retracted Distance=2.80m < default 3.20m)
+    9. Corner collision avoidance: PASS (Obstructed=True, Corner Distance=1.31m)
+    10. Ground collision avoidance: PASS (Camera height Y=0.29m kept above ground plane 0.0m)
+    11. Distance recovery: PASS (Restored Distance=3.18m to default 3.20m)
+    12. Collider non-penetration guarantee: PASS (Camera strictly outside obstacle colliders)
+- **Builder Automation & Scene Obstacles (`CameraPhase3Builder.cs`):**
+  - Scene configuration menu `RED MOON/Camera/Setup Test Scene Camera` ensures `Test_Obstacles` (North Wall, Corner Wall, West Wall on layer `Environment` 12) in `PlayerTest.unity`.
+
+### Verified
+- C# compilation: 0 errors, 0 warnings.
+- Play Mode QA test harness in `PlayerTest.unity`: `ALL 12 PHASE 3.4 TESTS PASSED`.
+- Regression check on `Bootstrap.unity`: build index 0 preserved, 0 errors, 0 warnings.
+- Package integrity: `Packages/manifest.json` and `Packages/packages-lock.json` completely untouched.
+
+---
+
 ## Template for Future Entries
 
 ```
