@@ -635,6 +635,142 @@ conflicts. No force-push or hard reset was used.
 
 ---
 
+## 2026-11-12 — Phase 3.4 Manual QA: Mouse Look & Collision Recovery Bug Resolution
+
+**Status:** Complete
+
+### Issues Investigated & Root Causes
+- **Issue 1: Mouse Movement Did Not Rotate Camera**
+  - **Root Cause A (Awake Timing & Unassigned Reference):** In `PlayerTest.unity`, `CameraController.Awake()` executed prior to `PlayerInputReader.Awake()`, leaving `reader.Input` null. In addition, the serialized `inputActions` reference was unassigned on the `Main Camera` component, leaving `_input` completely `null` and causing `ProcessLookInput` to abort early on `if (_input == null) return;`.
+  - **Root Cause B (Cursor Lock State):** In the Unity Editor Game View, `Cursor.lockState` was `CursorLockMode.None`, allowing the OS cursor to reach window borders and cease reporting continuous relative mouse deltas.
+  - **Root Cause C (Input Reading Update Loop):** In the Unity Input System, `<Mouse>/delta` is an instantaneous per-frame delta cleared during dynamic update; reading it in `LateUpdate()` caused dropped deltas.
+  - **Fix:**
+    - Added automatic cursor locking (`Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false;`) with Escape (unlock) and Left-Click (re-lock) toggles in `CameraController.cs`.
+    - Added fallback `if (_input == null) InitializeInput();` in `Start()` and `Update()`.
+    - Assigned canonical `REDMOON_InputActions` to `inputActions` property on `CameraController` in `PlayerTest.unity` and `CameraPhase3Builder.cs`.
+    - Moved input reading to `Update()` via `ProcessLookInput(Time.deltaTime)`, directly reading `Mouse.current.delta` alongside `_input.CameraLook` without GC allocations, while retaining camera world-space positioning in `LateUpdate()`.
+
+- **Issue 2: Camera Collision Recovery Velocity Contamination**
+  - **Root Cause A (Velocity Retention):** During camera retraction when moving toward an obstacle (`_targetDistance < _currentDistance`), `Mathf.MoveTowards` updated distance, but `_distanceVelocity` was never reset. When clear of obstacles, `Mathf.SmoothDamp` resumed with retained negative velocity, resisting distance recovery.
+  - **Root Cause B (Overly Broad Hit Flagging):** SphereCast detected hits at boundary distances where `safeDist >= desiredDistance`, flagging `hitDetected = true` and restricting distance expansion prematurely.
+  - **Root Cause C (SmoothDamp Epsilon Trailing):** `SmoothDamp` asymptotically approached `3.20m` without an epsilon snap, leaving the camera at ~3.14m–3.18m.
+  - **Fix:**
+    - Reset `_distanceVelocity = 0f;` whenever retraction occurs (`_targetDistance < _currentDistance`).
+    - Guarded obstruction detection so `hitDetected = true` only fires when `safeDist < desiredDistance`.
+    - Added epsilon snap: `if (Mathf.Abs(_targetDistance - _currentDistance) < 0.005f) { _currentDistance = _targetDistance; _distanceVelocity = 0f; }`.
+    - Reset `_targetDistance = config.defaultDistance; _currentDistance = _targetDistance; _distanceVelocity = 0f;` in `SnapToTarget()`.
+
+### Verified
+- C# compilation: 0 errors, 0 warnings.
+- Play Mode QA Test Suite in `PlayerTest.unity`: `ALL 12 PHASE 3.4 TESTS PASSED`.
+- Runtime Verification: Cursor locked, mouse look delta active, camera returns cleanly and smoothly to exact `3.20m` upon obstacle exit (`IsObstructed=False, CurrentDistance=3.20m`).
+- Regression check on `Bootstrap.unity`: build index 0 preserved, 0 errors, 0 warnings.
+- Git status: only camera files modified; clean working tree.
+
+---
+
+## 2026-11-12 — Phase 4: Complete Horse Development
+
+**Status:** Complete
+
+### Implemented
+- **Horse Architecture & Assembly (`RedMoon.Horse`):**
+  - Configured `RedMoon.Horse.asmdef` referencing `RedMoon.Core`, `RedMoon.Player`, `RedMoon.Camera`, and `Unity.InputSystem` with zero circular references.
+  - Created centralized ScriptableObject configuration: `HorseConfig.cs` and `Horse_Config.asset`.
+  - Implemented immutable `HorseInputFrame.cs` and `HorseInputReader.cs` wrapping the `Horse` map in `REDMOON_InputActions.inputactions` (Move, Look, Jump, Sprint, Dismount).
+- **Physical Quadruped Locomotion Motor (`HorseController.cs`):**
+  - CharacterController-based movement motor supporting 4 progressive speed tiers:
+    - Walk ($2.5\text{ m/s}$)
+    - Trot ($5.0\text{ m/s}$)
+    - Gallop ($9.0\text{ m/s}$)
+    - Sprint ($13.5\text{ m/s}$)
+  - Directional turning rate ($160^\circ/\text{s}$) with rotational smoothing ($0.1\text{s}$).
+  - Smooth acceleration ($8\text{ m/s}^2$) and deceleration ($12\text{ m/s}^2$) curves.
+  - Ground stick force ($-3.0\text{ m/s}$), gravity ($-22\text{ m/s}^2$), and airborne control ($0.35$).
+  - Slope projection via `Vector3.ProjectOnPlane` aligning movement along terrain normal up to slope limit ($45^\circ$).
+- **Explicit 13-State Machine (`HorseStateMachine.cs`):**
+  - Manages states: `Idle`, `Walking`, `Trotting`, `Galloping`, `Sprinting`, `Turning`, `Jumping`, `Falling`, `Landing`, `Mounting`, `Mounted`, `Dismounting`, `Dead`.
+  - Predictable deterministic transitions based on physical velocity, ground state, and mounting status.
+- **Dedicated Ground Detection (`HorseGroundDetection.cs`):**
+  - SphereCast & Raycast queries evaluating contact, surface normal, and slope angle against `Ground` (13) and `Environment` (12) layers.
+- **Player Mounting & Rider Attachment (`HorseMountController.cs` & `HorseInteraction.cs`):**
+  - Proximity detection via `HorseInteraction.cs` within interaction radius ($2.5\text{m}$).
+  - Clean player suspension: zeroes player velocity, disables Player `CharacterController`, `PlayerInputReader`, and `PlayerController` without destroying or duplicating the GameObject.
+  - Parents player to `RiderSocket` at saddle position.
+  - Activates `HorseInputReader` and enables dedicated horse gameplay map.
+  - Safe dismount position validation: tests lateral left and right dismount points using obstacle SphereCasts and downward ground Raycasts to guarantee the rider never clips into geometry or falls into voids.
+  - Clean player restoration: unparents rider, positions on ground, re-enables PlayerController, CharacterController, and input reader.
+- **Camera Integration:**
+  - Automatically redirects camera target to `RiderFocusPoint` on mount and smoothly returns to Player transform on dismount.
+  - Preserves mouse and gamepad camera look, pitch limits, shoulder switching, and collision avoidance while mounted.
+- **Prefab & Environment Setup (`HorsePhase4Builder.cs`):**
+  - Created `Assets/_Project/Prefabs/Horse/Horse.prefab` with modular prototype geometry (`Model_Prototype`), dark medieval aesthetic, and complete socket hierarchy.
+  - Generated dedicated test scene: `Assets/_Project/Scenes/Development/HorseTest.unity` featuring ground plane, 15° and 30° test ramps, environment obstacle walls, directional light, horse instance, player instance, and `HorseDebugUI.cs`.
+- **Automated QA Test Suite (`HorseTestHarness.cs`):**
+  - Validates 29 comprehensive runtime criteria covering prefab instantiation, speeds, acceleration, deceleration, turning, ground detection, slope stability, mount range, rider attachment, player suspension, horse input activation, camera focus, camera look, shoulder switching, dismount execution, player restoration, safe dismount placement, repeated transition prevention, and full project regressions.
+
+### Verified
+- C# compilation: 0 errors, 0 warnings.
+- Automated QA Test Suite in `HorseTest.unity`: `ALL 29 PHASE 4 TESTS PASSED (29/29)`.
+- Bootstrap scene regression: `Bootstrap.unity` verified in Play Mode with 0 errors/warnings at build index 0.
+- PlayerTest scene regression: `PlayerTest.unity` verified in Play Mode with all 12 Phase 3.4 camera tests passing.
+- Package manifest: clean and untouched.
+
+---
+
+## 2026-11-12 — Phase 4: Bug Fixes, Locomotion Motor Overhaul & 3D Model Rework
+
+**Status:** Complete
+
+### Issues Investigated & Root Causes
+- **Horse Movement Freeze in Gameplay:**
+  - **Root Cause A (`HorseTestHarness` Lockout):** `HorseTestHarness.cs` executed automatically on `Start()` inside `HorseTest.unity`, setting `horseController.ExternalInput = true;`. It never restored `ExternalInput = false;`, causing `HorseController.Update()` to abort every frame during actual manual gameplay.
+  - **Root Cause B (Sideways Drift & Sliding):** `HorseController` stored momentum as a 3D world-space vector (`_horizontalVelocity`) interpolated via `Vector3.MoveTowards()`. Turning the horse with `A`/`D` caused the horse to slide sideways like a hovercraft for seconds until the vector caught up.
+  - **Root Cause C (Ground Detection Offset Overlap):** `HorseGroundDetection` origin was positioned too low, causing `SphereCast` to start overlapping ground geometry at $y=0$, giving false hits or premature clamps.
+  - **Root Cause D (Jump Gravity Application):** Gravity was guarded by `if (!groundedNow)` without checking `_verticalVelocity > 0.01f`, preventing gravity from reducing upward velocity during ascent.
+- **Missing / Invisible Materials on Horse Prefab:**
+  - In the original builder, a temporary material was created in memory (`new Material(...)`) and assigned before `SaveAsPrefabAsset()`. Because it was never saved to a persistent `.mat` asset in `Assets/`, Unity serialized `sharedMaterial = null`, causing the mesh to render invisible or magenta.
+- **Unacceptable Primitive Model Quality:**
+  - The primitive cube/capsule prototype geometry was visually unsuitable for a third-person dark fantasy game.
+
+### Applied Fixes & Rework
+- **Longitudinal Forward Speed Motor (`HorseController.cs`):**
+  - Converted locomotion to longitudinal forward scalar speed `_currentForwardSpeed`:
+    `_currentForwardSpeed = Mathf.MoveTowards(_currentForwardSpeed, targetSpeed, accelRate * deltaTime);`
+    `_horizontalVelocity = forwardDirection * _currentForwardSpeed;`
+  - Eliminates sideways sliding and ice-skating drift; turning immediately aligns forward velocity with the horse's facing.
+  - S key smoothly backs up at $-1.5\text{ m/s}$.
+  - W key accelerates through Walk ($2.5\text{ m/s}$), Trot ($5.0\text{ m/s}$), Gallop ($9.0\text{ m/s}$), and Sprint ($13.5\text{ m/s}$ with Shift).
+- **Direct Hardware Polling Fallback (`HorseInputReader.cs`):**
+  - Added direct `Keyboard.current` (WASD, Shift, Space, E) and `Gamepad.current` polling alongside `RedMoonInput`, ensuring inputs are never lost.
+- **Elevated SphereCast & True Air Detection (`HorseGroundDetection.cs` & `HorseController.cs`):**
+  - Elevated ground check origin to $0.30\text{m}$ with radius $0.22\text{m}$ and sweep $0.20\text{m}$.
+  - Flagged `groundedNow = false` whenever `_verticalVelocity > 0.1f` (ascending), applying $-22\text{ m/s}^2$ gravity and smooth landing.
+- **Dedicated 3D Quadruped Horse Model (`Horse_DarkWarrior.obj`):**
+  - Generated anatomically proportioned low-poly quadruped mesh (472 vertices, 854 triangular faces) featuring barrel, withers, arched crested neck, sculpted head with muzzle/nostrils/ears, 4 articulated legs with shoulder/hock joints, flared hooves, mane ridge, and flowing tail.
+  - Stored at `Assets/_Project/Art/Characters/Horse/Models/Horse_DarkWarrior.obj`.
+- **Persistent URP Lit Material & 1024x1024 Textures (`HorseAssetGenerator.cs`):**
+  - Generated `T_Horse_DarkCharcoal_Albedo.png` and `T_Horse_DarkCharcoal_Normal.png` in `Assets/_Project/Art/Characters/Horse/Textures/`.
+  - Created persistent `M_Horse_DarkCharcoal.mat` with URP Lit shader, dark charcoal/black coat, subtle crimson undertones for RED MOON aesthetic, dark horn hooves, and smooth coat sheen.
+- **Non-Intrusive Test Harness (`HorseTestHarness.cs`):**
+  - Set `autoRunOnStart = false` so manual gameplay is never hijacked when entering `HorseTest.unity`.
+  - Added `finally` cleanup to guarantee `ExternalInput = false;` and `StopMovement();` after automated tests.
+
+### Verified
+- C# compilation: 0 errors, 0 warnings.
+- Real Play Mode manual gameplay:
+  - Mount via `E`: PASS (player parented to `RiderSocket`, camera smoothly tracks `RiderFocusPoint`).
+  - WASD Locomotion: PASS (Walk $2.5\text{ m/s}$, Trot $5.0\text{ m/s}$, Gallop $9.0\text{ m/s}$, Sprint $13.5\text{ m/s}$).
+  - Turning: PASS (smooth yaw rotation without sideways drift).
+  - Jump & Land: PASS (upward impulse $7.85\text{ m/s}$, airborne parabola, grounded stick).
+  - Dismount via `E`: PASS (rider steps off safely, player controls restored, camera restored).
+  - 3D Model & Textures: PASS (rich dark charcoal coat visible under URP lighting in Scene & Game views).
+- Automated QA suite: `ALL 29 PHASE 4 TESTS PASSED (29/29)`.
+- Bootstrap regression: 0 errors, 0 warnings at build index 0.
+- PlayerTest regression: 0 errors, 0 warnings, all 12 camera tests passed.
+
+---
+
 ## Template for Future Entries
 
 ```

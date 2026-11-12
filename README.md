@@ -2,7 +2,7 @@
 
 A cinematic, realistic 3D open-world horror adventure built in Unity 6.
 
-> **Status:** Phase 2 — Main character development complete (locomotion, animations, input and test harness). Ready for Phase 3 Camera Development.  
+> **Status:** Phase 4 — Complete Horse Development complete (locomotion, 4-tier speeds, mounting/dismounting, camera integration, QA test harness).  
 > **Engine:** Unity 6.6 (`6000.6.8f1`)  
 > **Render pipeline:** Universal Render Pipeline (URP) `17.6.0`  
 > **Input:** Unity Input System `1.20.1`  
@@ -261,17 +261,21 @@ Rules:
 | 1.4 Final configuration and QA | Complete |
 | 1.5 Git, GitHub, LFS and documentation | Complete |
 | 2.0 Main character development | Complete |
+| 3.0 Third-person camera system | Complete |
+| 4.0 Complete horse development | Complete |
 
-Phase 2 verified:
-
-- CharacterController motor with tunable `PlayerConfig` ScriptableObject.
-- Humanoid rigged character model with sword (`RightHand`) and cloak (`Spine02`) attachment sockets.
-- Input System integration via `RedMoonInput` supporting Keyboard/Mouse and Gamepad.
-- Locomotion state machine: Idle, Walk, Run, Sprint, Jump, Fall, Land, Turn.
-- Retargeted Mecanim animation controller with 7 distinct movement states.
-- Clean play-mode verification in `PlayerTest.unity` development test harness.
-
-No horse system, enemy AI, combat, open world terrain or save system has been implemented yet. Ready for Phase 3 Camera Development.
+Phase 4 verified:
+- Independent horse entity with CharacterController locomotion motor.
+- 4-tier movement system: Walk (2.5 m/s), Trot (5.0 m/s), Gallop (9.0 m/s), Sprint (13.5 m/s).
+- Realistic acceleration curves (8 m/s²), deceleration (12 m/s²), and directional turning (160°/s).
+- SphereCast ground detection with slope adaptation and gravity stick.
+- Explicit 13-state machine (`HorseStateMachine.cs`).
+- Seamless player mounting and dismounting (`HorseMountController.cs` & `HorseInteraction.cs`).
+- Rider socket attachment with safe player motor suspension (zero player duplication or destruction).
+- Safe dismount validation via obstacle SphereCast and downward ground surface Raycasts.
+- Third-person camera integration with smooth focus tracking and sprint FOV modulation.
+- Automated QA test harness with 29/29 tests passed in `HorseTest.unity`.
+- Non-destructive regressions: `Bootstrap.unity` and `PlayerTest.unity` remain 100% functional.
 
 ---
 

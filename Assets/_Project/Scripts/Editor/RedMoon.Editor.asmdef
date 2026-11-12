@@ -5,6 +5,7 @@
                        "RedMoon.Core",
                        "RedMoon.Player",
                        "RedMoon.Camera",
+                       "RedMoon.Horse",
                        "Unity.InputSystem",
                        "Unity.RenderPipelines.Core.Runtime",
                        "Unity.RenderPipelines.Universal.Runtime"

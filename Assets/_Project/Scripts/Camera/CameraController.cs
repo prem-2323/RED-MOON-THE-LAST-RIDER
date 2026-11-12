@@ -17,7 +17,8 @@ namespace RedMoon.Camera
     /// - Rapid retraction on obstruction, smooth distance recovery when clear.
     /// - Dynamic sprint FOV modulation (60° -> 64°).
     /// - Safe lateral wall avoidance for shoulder switching.
-    /// - Zero garbage allocation in LateUpdate().
+    /// - Automatic cursor locking with Escape/Click toggle.
+    /// - Robust mouse and gamepad input handling with zero GC allocations.
     /// </summary>
     [RequireComponent(typeof(UnityEngine.Camera))]
     public sealed class CameraController : MonoBehaviour
@@ -35,6 +36,10 @@ namespace RedMoon.Camera
         [Header("Input")]
         [Tooltip("Canonical Input Actions asset (optional if target has PlayerInputReader).")]
         [SerializeField] private InputActionAsset inputActions;
+
+        [Header("Cursor Settings")]
+        [Tooltip("Whether to lock and hide the mouse cursor for third-person mouse look.")]
+        [SerializeField] private bool lockCursor = true;
 
         private RedMoonInput _input;
         private bool _ownsInput;
@@ -97,6 +102,12 @@ namespace RedMoon.Camera
         /// </summary>
         public bool SimulatedSprinting { get; set; }
 
+        public bool LockCursorEnabled
+        {
+            get => lockCursor;
+            set => lockCursor = value;
+        }
+
         private void Awake()
         {
             _cameraComponent = GetComponent<UnityEngine.Camera>();
@@ -109,6 +120,54 @@ namespace RedMoon.Camera
         private void Start()
         {
             BindToPlayer();
+
+            if (_input == null)
+            {
+                InitializeInput();
+            }
+
+            if (lockCursor && !ExternalInput)
+            {
+                SetCursorLocked(true);
+            }
+        }
+
+        private void Update()
+        {
+            if (_input == null)
+            {
+                InitializeInput();
+            }
+
+            HandleCursorLock();
+
+            if (!ExternalInput)
+            {
+                ProcessLookInput(Time.deltaTime);
+            }
+        }
+
+        private void HandleCursorLock()
+        {
+            if (ExternalInput || !lockCursor)
+            {
+                return;
+            }
+
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                SetCursorLocked(false);
+            }
+            else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                SetCursorLocked(true);
+            }
+        }
+
+        public void SetCursorLocked(bool locked)
+        {
+            Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !locked;
         }
 
         private void OnDestroy()
@@ -155,6 +214,10 @@ namespace RedMoon.Camera
                 var reader = target.GetComponent<PlayerInputReader>();
                 if (reader != null && reader.Input != null)
                 {
+                    if (_input != null && _input != reader.Input)
+                    {
+                        try { _input.SwitchShoulder.performed -= OnSwitchShoulderPerformed; } catch { }
+                    }
                     _input = reader.Input;
                     _ownsInput = false;
                     _input.SwitchShoulder.performed += OnSwitchShoulderPerformed;
@@ -162,7 +225,7 @@ namespace RedMoon.Camera
                 }
             }
 
-            if (inputActions != null)
+            if (inputActions != null && _input == null)
             {
                 _input = new RedMoonInput(inputActions);
                 _input.EnableGameplay();
@@ -262,36 +325,35 @@ namespace RedMoon.Camera
             }
 
             float deltaTime = Time.deltaTime;
-
-            if (!ExternalInput)
-            {
-                ProcessLookInput(deltaTime);
-            }
-
             UpdateCamera(deltaTime);
         }
 
         private void ProcessLookInput(float deltaTime)
         {
-            if (_input == null)
+            Vector2 mouseDelta = Mouse.current != null ? Mouse.current.delta.ReadValue() : Vector2.zero;
+            Vector2 actionLook = _input != null ? _input.CameraLook.ReadValue<Vector2>() : Vector2.zero;
+
+            Vector2 lookDelta = Vector2.zero;
+            bool isMouse = false;
+
+            if (mouseDelta.sqrMagnitude > 0.0001f)
+            {
+                lookDelta = mouseDelta;
+                isMouse = true;
+            }
+            else if (actionLook.sqrMagnitude > 0.0001f)
+            {
+                lookDelta = actionLook;
+                var control = _input != null ? _input.CameraLook.activeControl : null;
+                isMouse = control != null ? control.device is Mouse : (Gamepad.current == null || Gamepad.current.rightStick.ReadValue().sqrMagnitude < 0.01f);
+            }
+
+            if (lookDelta.sqrMagnitude < 0.00001f)
             {
                 return;
             }
 
-            Vector2 rawLook = _input.CameraLook.ReadValue<Vector2>();
-            if (rawLook.sqrMagnitude < 0.00001f)
-            {
-                return;
-            }
-
-            bool isMouse = true;
-            var control = _input.CameraLook.activeControl;
-            if (control != null)
-            {
-                isMouse = control.device is Mouse;
-            }
-
-            ApplyLook(rawLook, isMouse, deltaTime);
+            ApplyLook(lookDelta, isMouse, deltaTime);
         }
 
         /// <summary>
@@ -366,17 +428,23 @@ namespace RedMoon.Camera
 
             if (Physics.SphereCast(cameraPivot, config.collisionRadius, backDirection, out RaycastHit sphereHit, desiredDistance, config.collisionLayers, QueryTriggerInteraction.Ignore))
             {
-                hitDetected = true;
-                _lastCollisionHit = sphereHit;
-                float safeDist = Mathf.Max(0.2f, sphereHit.distance - config.collisionPadding);
-                targetDist = Mathf.Min(desiredDistance, safeDist);
+                float safeDist = sphereHit.distance - config.collisionPadding;
+                if (safeDist < desiredDistance)
+                {
+                    hitDetected = true;
+                    _lastCollisionHit = sphereHit;
+                    targetDist = Mathf.Clamp(safeDist, 0.2f, desiredDistance);
+                }
             }
             else if (Physics.Raycast(cameraPivot, backDirection, out RaycastHit rayHit, desiredDistance, config.collisionLayers, QueryTriggerInteraction.Ignore))
             {
-                hitDetected = true;
-                _lastCollisionHit = rayHit;
-                float safeDist = Mathf.Max(0.2f, rayHit.distance - (config.collisionRadius + config.collisionPadding));
-                targetDist = Mathf.Min(desiredDistance, safeDist);
+                float safeDist = rayHit.distance - (config.collisionRadius + config.collisionPadding);
+                if (safeDist < desiredDistance)
+                {
+                    hitDetected = true;
+                    _lastCollisionHit = rayHit;
+                    targetDist = Mathf.Clamp(safeDist, 0.2f, desiredDistance);
+                }
             }
 
             _isObstructed = hitDetected;
@@ -385,26 +453,24 @@ namespace RedMoon.Camera
             // 6. Distance interpolation: rapid retraction on obstruction, smooth recovery when clear
             if (_targetDistance < _currentDistance)
             {
+                // Reset recovery velocity on retraction to avoid retaining negative/contaminated momentum
+                _distanceVelocity = 0f;
                 // Rapidly retract to prevent any visible wall clipping
                 _currentDistance = Mathf.MoveTowards(_currentDistance, _targetDistance, 25f * deltaTime);
             }
             else
             {
                 // Smoothly ease back out when obstruction clears
-                _currentDistance = Mathf.SmoothDamp(_currentDistance, _targetDistance, ref _distanceVelocity, 0.2f);
+                _currentDistance = Mathf.SmoothDamp(_currentDistance, _targetDistance, ref _distanceVelocity, 0.25f);
+                if (Mathf.Abs(_targetDistance - _currentDistance) < 0.005f)
+                {
+                    _currentDistance = _targetDistance;
+                    _distanceVelocity = 0f;
+                }
             }
 
             // 7. Place camera and align rotation
             Vector3 finalPosition = cameraPivot + backDirection * _currentDistance;
-
-            // Safety check against penetrating colliders
-            if (Physics.CheckSphere(finalPosition, config.collisionRadius * 0.85f, config.collisionLayers, QueryTriggerInteraction.Ignore))
-            {
-                if (Physics.Raycast(finalPosition, -backDirection, out RaycastHit pushHit, _currentDistance, config.collisionLayers, QueryTriggerInteraction.Ignore))
-                {
-                    finalPosition = pushHit.point + backDirection * 0.05f;
-                }
-            }
 
             transform.position = finalPosition;
             transform.rotation = orbitRotation;
@@ -462,7 +528,9 @@ namespace RedMoon.Camera
             if (target != null && config != null)
             {
                 _currentFocusPosition = target.position + config.focusOffset;
+                _targetDistance = config.defaultDistance;
                 _currentDistance = _targetDistance;
+                _distanceVelocity = 0f;
                 _currentShoulderOffset = _targetShoulderOffset;
                 Quaternion orbitRotation = Quaternion.Euler(_currentPitch, _currentYaw, 0f);
                 Vector3 backDirection = -(orbitRotation * Vector3.forward);

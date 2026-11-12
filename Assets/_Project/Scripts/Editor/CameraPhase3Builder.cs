@@ -46,10 +46,12 @@ namespace RedMoon.Editor
                 cameraController = cameraObject.AddComponent<CameraController>();
             }
 
+            var actions = AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/_Project/Settings/Input/REDMOON_InputActions.inputactions");
             var so = new SerializedObject(cameraController);
             so.FindProperty("config").objectReferenceValue = config;
             so.FindProperty("target").objectReferenceValue = player.transform;
             so.FindProperty("playerController").objectReferenceValue = player.GetComponent<RedMoon.Player.PlayerController>();
+            so.FindProperty("inputActions").objectReferenceValue = actions;
             so.ApplyModifiedProperties();
 
             var harness = cameraObject.GetComponent<CameraTestHarness>();

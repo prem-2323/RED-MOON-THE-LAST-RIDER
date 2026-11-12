@@ -1,27 +1,19 @@
-﻿{
-    "name":  "RedMoon.Horse",
-    "rootNamespace":  "RedMoon.Horse",
-    "references":  [
-                       "RedMoon.Core",
-                       "Unity.InputSystem"
-                   ],
-    "includePlatforms":  {
-
-                         },
-    "excludePlatforms":  [
-
-                         ],
-    "allowUnsafeCode":  false,
-    "overrideReferences":  false,
-    "precompiledReferences":  [
-
-                              ],
-    "autoReferenced":  true,
-    "defineConstraints":  [
-
-                          ],
-    "versionDefines":  [
-
-                       ],
-    "noEngineReferences":  false
+{
+    "name": "RedMoon.Horse",
+    "rootNamespace": "RedMoon.Horse",
+    "references": [
+        "RedMoon.Core",
+        "RedMoon.Player",
+        "RedMoon.Camera",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

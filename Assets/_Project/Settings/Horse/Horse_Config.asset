@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c41e1329704c9bb4ebad9043a4974617, type: 3}
+  m_Name: Horse_Config
+  m_EditorClassIdentifier: RedMoon.Horse::RedMoon.Horse.HorseConfig
+  walkSpeed: 2.5
+  trotSpeed: 5
+  gallopSpeed: 9
+  sprintSpeed: 13.5
+  acceleration: 8
+  deceleration: 12
+  turnSpeed: 160
+  rotationSmoothing: 0.1
+  airControl: 0.35
+  jumpHeight: 1.4
+  gravity: -22
+  groundStickForce: -3
+  landingImpactThreshold: -3
+  landingDuration: 0.2
+  height: 2
+  radius: 0.65
+  centerY: 1
+  skinWidth: 0.08
+  stepOffset: 0.5
+  slopeLimit: 45
+  groundCheckRadius: 0.35
+  groundCheckOffset: 0.15
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 12289
+  mountInteractionRadius: 2.5
+  riderPositionOffset: {x: 0, y: 1.25, z: -0.1}
+  dismountOffsetLeft: {x: -1.3, y: 0, z: -0.1}
+  dismountOffsetRight: {x: 1.3, y: 0, z: -0.1}
+  mountDuration: 0.45
+  dismountDuration: 0.45
+  mountedCameraFocusOffset: {x: 0, y: 1.9, z: 0}
+  animationBlendSpeed: 8
+  animParamSpeed: Speed
+  animParamTurn: Turn
+  animParamGrounded: Grounded
+  animParamVerticalSpeed: VerticalSpeed
+  animParamState: State
+  animTriggerJump: Jump
+  animTriggerLand: Land
+  animTriggerMount: Mount
+  animTriggerDismount: Dismount

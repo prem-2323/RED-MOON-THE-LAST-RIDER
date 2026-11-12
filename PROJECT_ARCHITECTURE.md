@@ -1,6 +1,6 @@
 # RED MOON: THE LAST RIDER — Project Architecture
 
-**Document status:** Phase 3.4 complete (Camera Collision, Shoulder Switching & Dynamic FOV)  
+**Document status:** Phase 4 complete (Complete Horse Development, Locomotion, Mounting & QA)  
 **Engine:** Unity 6.6 (`6000.6.8f1`)  
 **Pipeline:** URP `17.6.0`  
 **Input:** Unity Input System `1.20.1`  
@@ -319,6 +319,25 @@ Tunable ScriptableObject parameters at `Assets/_Project/Settings/Camera/Camera_C
 ### Dynamic Features
 - **Shoulder Switching:** Driven by canonical `SwitchShoulder` input action (`<Keyboard>/c` and `<Gamepad>/rightStickPress`). Seamlessly transitions between right and left shoulders at 4.0 m/s (225ms transition).
 - **Dynamic FOV Modulation:** Reads `PlayerController.CurrentState == PlayerState.Sprinting`. Exponentially blends from `60°` to `64°` during sprints, restoring to `60°` when sprinting ceases.
+
+---
+
+## 5c. Horse System Architecture
+
+### Design Philosophy
+- **Independent Gameplay Entity:** Autonomous quadruped locomotion motor (`HorseController.cs` in `RedMoon.Horse` assembly) driven by `CharacterController` physics, independent of player state.
+- **Configurable ScriptableObject Core:** Centralized tuning at `Assets/_Project/Settings/Horse/Horse_Config.asset`.
+- **4-Tier Locomotion Model:** Walk (2.5 m/s), Trot (5.0 m/s), Gallop (9.0 m/s), Sprint (13.5 m/s) with realistic acceleration curves (8 m/s²), deceleration (12 m/s²), turning (160°/s) and slope projection.
+- **Explicit 13-State Machine (`HorseStateMachine.cs`):** Idle, Walking, Trotting, Galloping, Sprinting, Turning, Jumping, Falling, Landing, Mounting, Mounted, Dismounting, Dead.
+- **Seamless Mounting & Rider Attachment (`HorseMountController.cs`):**
+  - Proximity detection via `HorseInteraction.cs` (2.5m range).
+  - Suspends Player CharacterController, PlayerInputReader and PlayerController smoothly without destroying or duplicating the player GameObject.
+  - Parents rider to `RiderSocket` on the horse.
+  - Automatically redirects camera focus to `RiderFocusPoint`.
+  - Enables dedicated `Horse` input action map.
+- **Safe Dismount Validation:** Evaluates left and right dismount sockets using obstacle collision SphereCasts and downward ground Raycasts to ensure the player never clips into geometry or falls into voids.
+- **Camera Integration:** Seamlessly switches target between player and horse focus without teleportation snaps. Supports mouse look, gamepad look, shoulder switching and dynamic sprint FOV while mounted.
+- **Test Architecture:** Includes `HorseTestHarness.cs` validating all 29 automated QA criteria and immediate-mode debug UI (`HorseDebugUI.cs`).
 
 ---
 
