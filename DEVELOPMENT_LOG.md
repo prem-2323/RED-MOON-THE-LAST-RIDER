@@ -569,6 +569,25 @@ conflicts. No force-push or hard reset was used.
 
 ---
 
+## 2026-11-12 — Package Integrity & Maintenance: AI Assistant Removal & Deprecation Fixes
+
+**Status:** Complete
+
+### Resolved Issues
+- **Unity 6 AI Package Auto-Injection:**
+  - Encountered `Failed to determine dll type for Packages/com.unity.ai.inference/Editor/ONNX/Google.Protobuf_Packed.dll` and related `com.unity.ai.assistant` errors.
+  - Root cause: Unity 6.6 (`6000.6.8f1`) automatically introduced preview packages `com.unity.ai.assistant` (`2.21.0-pre.2`) and `com.unity.ai.inference` (`2.6.1`) with packed/obfuscated DLLs failing type determination on Windows Standalone.
+  - Fix: Purged both packages from `Packages/manifest.json` and `Packages/packages-lock.json`. Forced full asset/package database refresh via MCP.
+- **API Deprecation Cleanup (CS0618):**
+  - Updated deprecated `Object.FindFirstObjectByType<T>()` to `Object.FindAnyObjectByType<T>()` in `PlayerTestDriver.cs` and `CameraTestHarness.cs`.
+
+### Verified
+- `Packages/manifest.json` clean with only project dependencies.
+- Unity Editor console: 0 errors, 0 warnings.
+- Git status: clean.
+
+---
+
 ## Template for Future Entries
 
 ```
