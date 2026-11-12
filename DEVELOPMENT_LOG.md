@@ -438,14 +438,31 @@ conflicts. No force-push or hard reset was used.
 | GitHub CLI installed | NOT INSTALLED (not required; Git used) |
 | Windows IL2CPP support | NOT INSTALLED (Mono development builds used) |
 
+### Post-push documentation verification
+
+- Documentation commit `c520a6c` pushed successfully:
+  `4341af5..c520a6c main -> main`.
+- Remote `main` resolved to
+  `c520a6c52987a0ec259806b3b6be45c9da733c3b`.
+- A fresh shallow clone from the public GitHub URL was audited.
+- Remote tree contains 166 tracked files.
+- `README.md`, `DEVELOPMENT_LOG.md`, `PROJECT_ARCHITECTURE.md`, `.gitignore`
+  and `.gitattributes` are present.
+- All required project files are present.
+- `Library/`, `Temp/`, `Obj/`, `Logs/`, `UserSettings/`, `Build/`, `Builds/`,
+  `MemoryCaptures/` and `Assets/Screenshots/` are absent.
+- `git lfs ls-files` in the fresh clone returned no files; no binary source
+  media has been committed yet.
+- The local working tree is clean after the documentation commit.
+
 ### Known limitations
 
 - The remote history initially contained only an empty commit; it is preserved
   in the merge history rather than rewritten.
 - No Git LFS objects exist until the first binary source asset is added.
 - GitHub CLI is not installed; remote inspection was performed with Git.
-- The final documentation commit and its remote verification are reported in
-  the Phase 1.5 final report.
+- The final post-verification documentation commit is recorded in the Phase 1.5
+  final report.
 
 ---
 
