@@ -1,0 +1,51 @@
+{
+ "slug": "ninja",
+ "triangles": 800000,
+ "texture_px": 4096,
+ "triangles_light": 399999,
+ "texture_px_light": 1024,
+ "files": {
+  "glb": {
+   "name": "ninja.glb",
+   "bytes": 27975696
+  },
+  "blend": {
+   "name": "ninja.blend",
+   "bytes": 34185717
+  },
+  "fbx": {
+   "name": "ninja.fbx",
+   "bytes": 48964188
+  },
+  "obj": {
+   "name": "ninja-obj.zip",
+   "bytes": 20529050
+  },
+  "usdz": {
+   "name": "ninja.usdz",
+   "bytes": 44064056
+  },
+  "glb_light": {
+   "name": "ninja-light.glb",
+   "bytes": 12470600
+  },
+  "fbx_light": {
+   "name": "ninja-light.fbx",
+   "bytes": 24594044
+  }
+ },
+ "extras": {
+  "license": "CC0-1.0",
+  "source": "grab3d.com",
+  "dimensions_m": "0.975 x 0.428 x 1.750",
+  "triangles": 800000,
+  "variant": "download",
+  "generator": "Created by grab3d",
+  "created": "2026-10-29"
+ },
+ "origin": {
+  "method": "ai-assisted",
+  "detail": "Base mesh and textures generated with an AI image-to-3D tool (Meshy), then cleaned up, scaled, textured and checked in Blender.",
+  "ai_content": true
+ }
+}

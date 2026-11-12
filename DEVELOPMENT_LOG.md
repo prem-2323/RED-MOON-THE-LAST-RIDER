@@ -477,6 +477,43 @@ conflicts. No force-push or hard reset was used.
 
 ---
 
+## 2026-11-12 — Phase 2: Main Character Development
+
+**Status:** Complete
+
+### Implemented
+- **Player Character Foundation (Stage 2.1):**
+  - Created `PlayerConfig` ScriptableObject at `Assets/_Project/Settings/Player/Player_Config.asset` with tunable parameters for walk (2.2 m/s), run (4.8 m/s), sprint (7.5 m/s), jump height (1.25 m), gravity (-22 m/s²), air control (0.65), and ground check parameters.
+  - Implemented `PlayerController` motor wrapping Unity's `CharacterController` (height 1.8m, radius 0.32m, center `(0, 0.9, 0)`).
+  - Created deterministic `PlayerStateMachine` handling states: `Idle`, `Walking`, `Running`, `Sprinting`, `Jumping`, `Falling`, `Landing`.
+  - Added `PlayerInputFrame` struct decoupling hardware input from motor logic.
+  - Added `PlayerInputReader` binding runtime gameplay input through `RedMoonInput` and `REDMOON_InputActions.inputactions`.
+- **Character Model & Sockets (Stage 2.2):**
+  - Integrated humanoid rigged model `Player_Interim_Ninja.fbx` with CC0 license into `Assets/_Project/Art/Characters/Player/Models/`.
+  - Configured `ModelImporter` to Humanoid with `CreateFromThisModel` Avatar.
+  - Created `PlayerModelSocket` with `SwordSocket` attached directly to bone `RightHand` and `CloakRoot` attached to bone `Spine02`.
+- **Locomotion & Movement (Stage 2.3):**
+  - Implemented smooth acceleration/deceleration (`Vector3.MoveTowards`), air control multiplier, camera-relative directional steering, and smooth rotation (`Quaternion.RotateTowards`).
+  - Implemented robust ground detection combining `CharacterController.isGrounded` and downward `Physics.CheckSphere` at `(0, 0.08, 0)` against `Ground` (Layer 13) and `Environment` (Layer 12).
+- **Locomotion Animation (Stage 2.4):**
+  - Configured `UniversalAnimationLibrary_Standard.fbx` with Humanoid Avatar for Mecanim retargeting.
+  - Created `Player_AnimatorController.controller` at `Assets/_Project/Settings/Player/` with parameters `Speed`, `VerticalSpeed`, `Grounded`, `Turn`, `State`, `Jump`, `Land`.
+  - Wired states: `Idle` (`Idle_Loop`), `Walk` (`Walk_Loop`), `Run` (`Jog_Fwd_Loop`), `Sprint` (`Sprint_Loop`), `Jump` (`Jump_Start`), `Fall` (`Jump_Loop`), `Land` (`Jump_Land`).
+  - Implemented `PlayerAnimator` bridging `PlayerController` velocity, turn angle, and state transitions to the Animator.
+- **Character Testing Harness & Verification (Stage 2.5):**
+  - Created development test scene at `Assets/_Project/Scenes/Development/PlayerTest.unity`.
+  - Created `PlayerTestDriver` component rendering on-screen telemetry GUI and logging state changes.
+  - Created `Player_Interim.prefab` at `Assets/_Project/Prefabs/Characters/` assembling motor, visual model, sockets, input reader, and animator bridge.
+
+### Verified
+- Zero compiler errors, zero warnings across all assemblies.
+- Executed Play Mode smoke test in `PlayerTest.unity`: console remained 100% clean.
+- Verified ground detection, CharacterController grounding, and physics collision.
+- Verified Bootstrap scene integrity (index 0 in Build Settings preserved).
+- Unity MCP tools verified hierarchy, asset database, and live inspector state.
+
+---
+
 ## Template for Future Entries
 
 ```

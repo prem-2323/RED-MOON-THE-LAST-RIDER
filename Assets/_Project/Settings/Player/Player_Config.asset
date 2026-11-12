@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97737a4b7f26f3349a7513c0ffd7a158, type: 3}
+  m_Name: Player_Config
+  m_EditorClassIdentifier: RedMoon.Player::RedMoon.Player.PlayerConfig
+  walkSpeed: 2.2
+  runSpeed: 4.8
+  sprintSpeed: 7.5
+  acceleration: 12
+  deceleration: 18
+  airControl: 0.65
+  rotationSpeed: 360
+  jumpHeight: 1.25
+  gravity: -22
+  groundedStickForce: -2.5
+  landingDuration: 0.18
+  landingImpactThreshold: -2.5
+  groundCheckRadius: 0.22
+  groundCheckOffset: 0.08
+  height: 1.8
+  radius: 0.32
+  skinWidth: 0.08
+  minMoveDistance: 0.001
+  slopeLimit: 50
+  stepOffset: 0.35
+  centerY: 0.9
+  walkThreshold: 0.15
+  runThreshold: 2.5
+  sprintThreshold: 5.5
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 12289

@@ -2,7 +2,7 @@
 
 A cinematic, realistic 3D open-world horror adventure built in Unity 6.
 
-> **Status:** Phase 1.5 — project configuration, quality assurance and repository foundation complete. No gameplay content has been implemented yet.  
+> **Status:** Phase 2 — Main character development complete (locomotion, animations, input and test harness). Ready for Phase 3 Camera Development.  
 > **Engine:** Unity 6.6 (`6000.6.8f1`)  
 > **Render pipeline:** Universal Render Pipeline (URP) `17.6.0`  
 > **Input:** Unity Input System `1.20.1`  
@@ -260,21 +260,18 @@ Rules:
 | 1.3 Architecture, folders, assemblies and input | Complete |
 | 1.4 Final configuration and QA | Complete |
 | 1.5 Git, GitHub, LFS and documentation | Complete |
+| 2.0 Main character development | Complete |
 
-Phase 1.4 verified:
+Phase 2 verified:
 
-- 16 assembly definitions, no cycles and no runtime `UnityEditor` references.
-- Input asset: 5 maps, 31 actions, 80 bindings, 2 control schemes.
-- URP: 4 pipeline assets sharing the preserved `REDMOON_Renderer`.
-- Tags and layers for Player, Enemy, Horse, Interactable, Environment, Ground
-  and Projectile.
-- Audio mixer with six groups.
-- Windows x64 development build: 0 errors.
-- Play Mode smoke test: clean console.
-- Built-player smoke test: process launched and remained stable.
+- CharacterController motor with tunable `PlayerConfig` ScriptableObject.
+- Humanoid rigged character model with sword (`RightHand`) and cloak (`Spine02`) attachment sockets.
+- Input System integration via `RedMoonInput` supporting Keyboard/Mouse and Gamepad.
+- Locomotion state machine: Idle, Walk, Run, Sprint, Jump, Fall, Land, Turn.
+- Retargeted Mecanim animation controller with 7 distinct movement states.
+- Clean play-mode verification in `PlayerTest.unity` development test harness.
 
-No player controller, horse controller, terrain, enemy AI, combat, missions or
-save system has been implemented. Phase 2 requires explicit approval.
+No horse system, enemy AI, combat, open world terrain or save system has been implemented yet. Ready for Phase 3 Camera Development.
 
 ---
 

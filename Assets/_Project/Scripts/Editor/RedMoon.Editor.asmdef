@@ -3,6 +3,7 @@
     "rootNamespace":  "RedMoon.Editor",
     "references":  [
                        "RedMoon.Core",
+                       "RedMoon.Player",
                        "Unity.InputSystem",
                        "Unity.RenderPipelines.Core.Runtime",
                        "Unity.RenderPipelines.Universal.Runtime"

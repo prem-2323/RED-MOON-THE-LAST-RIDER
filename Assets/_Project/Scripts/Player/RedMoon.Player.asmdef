@@ -5,9 +5,9 @@
                        "RedMoon.Core",
                        "Unity.InputSystem"
                    ],
-    "includePlatforms":  {
+    "includePlatforms": [
 
-                         },
+    ],
     "excludePlatforms":  [
 
                          ],
