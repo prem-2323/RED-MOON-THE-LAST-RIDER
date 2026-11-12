@@ -12,6 +12,60 @@ namespace RedMoon.Editor
     {
         public const string ConfigFolder = "Assets/_Project/Settings/Camera";
         public const string ConfigPath = "Assets/_Project/Settings/Camera/Camera_Config.asset";
+        public const string TestScenePath = "Assets/_Project/Scenes/Development/PlayerTest.unity";
+
+        [MenuItem("RED MOON/Camera/Setup Test Scene Camera")]
+        public static void SetupTestSceneCamera()
+        {
+            var scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(TestScenePath);
+
+            var cameraObject = GameObject.FindWithTag("MainCamera");
+            if (cameraObject == null)
+            {
+                Debug.LogError("[RED MOON] Main Camera not found in " + TestScenePath);
+                return;
+            }
+
+            var config = AssetDatabase.LoadAssetAtPath<CameraConfig>(ConfigPath);
+            if (config == null)
+            {
+                CreateCameraConfig();
+                config = AssetDatabase.LoadAssetAtPath<CameraConfig>(ConfigPath);
+            }
+
+            var player = GameObject.FindWithTag("Player");
+            if (player == null)
+            {
+                Debug.LogError("[RED MOON] Player not found in " + TestScenePath);
+                return;
+            }
+
+            var cameraController = cameraObject.GetComponent<CameraController>();
+            if (cameraController == null)
+            {
+                cameraController = cameraObject.AddComponent<CameraController>();
+            }
+
+            var so = new SerializedObject(cameraController);
+            so.FindProperty("config").objectReferenceValue = config;
+            so.FindProperty("target").objectReferenceValue = player.transform;
+            so.FindProperty("playerController").objectReferenceValue = player.GetComponent<RedMoon.Player.PlayerController>();
+            so.ApplyModifiedProperties();
+
+            var harness = cameraObject.GetComponent<CameraTestHarness>();
+            if (harness == null)
+            {
+                harness = cameraObject.AddComponent<CameraTestHarness>();
+            }
+
+            var harnessSo = new SerializedObject(harness);
+            harnessSo.FindProperty("cameraController").objectReferenceValue = cameraController;
+            harnessSo.FindProperty("playerController").objectReferenceValue = player.GetComponent<RedMoon.Player.PlayerController>();
+            harnessSo.ApplyModifiedProperties();
+
+            UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene);
+            Debug.Log("[RED MOON] Configured CameraController on Main Camera in " + TestScenePath);
+        }
 
         [MenuItem("RED MOON/Camera/Create Camera Config")]
         public static void CreateCameraConfig()
@@ -73,3 +127,4 @@ namespace RedMoon.Editor
         }
     }
 }
+

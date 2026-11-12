@@ -284,6 +284,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d20f98e74db66084399b7de62987096d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RedMoon.Player::RedMoon.Player.PlayerController
+--- !u!4 &741854685 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 535191988352880921, guid: cf36566260182df45923641e9e55f51b, type: 3}
+  m_PrefabInstance: {fileID: 741854683}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &803795733
 GameObject:
   m_ObjectHideFlags: 0
@@ -343,6 +348,8 @@ GameObject:
   - component: {fileID: 1127308113}
   - component: {fileID: 1127308112}
   - component: {fileID: 1127308111}
+  - component: {fileID: 1127308116}
+  - component: {fileID: 1127308115}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -468,6 +475,36 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1127308115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1127308110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3efb8d6cc30bd8448b339e9934719618, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RedMoon.Camera::RedMoon.Camera.CameraTestHarness
+  cameraController: {fileID: 1127308116}
+  playerController: {fileID: 741854684}
+--- !u!114 &1127308116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1127308110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a649421b8b8409e4682a8e40f2a99b1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RedMoon.Camera::RedMoon.Camera.CameraController
+  config: {fileID: 11400000, guid: 7075fb1b08a600a468279f08df86a4f7, type: 2}
+  target: {fileID: 741854685}
+  playerController: {fileID: 741854684}
+  inputActions: {fileID: 0}
 --- !u!1 &1375342566
 GameObject:
   m_ObjectHideFlags: 0

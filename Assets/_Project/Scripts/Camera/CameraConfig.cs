@@ -97,3 +97,4 @@ namespace RedMoon.Camera
         public float fovBlendSpeed = 3f;
     }
 }
+

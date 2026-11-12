@@ -540,6 +540,35 @@ conflicts. No force-push or hard reset was used.
 
 ---
 
+## 2026-11-12 — Phase 3.3: Third-Person Camera Motor & Orbit Implementation
+
+**Status:** Complete
+
+### Implemented
+- **Orbital Camera Motor (`CameraController.cs`):** Created custom third-person camera controller in `Assets/_Project/Scripts/Camera/` within `RedMoon.Camera` assembly.
+  - Reads `CameraLook` from `RedMoonInput` supporting both mouse and gamepad.
+  - Computes orbital spherical coordinates around focus target (`target.position + config.focusOffset`).
+  - Implements pitch limits clamping (`[-35°, 65°]`) and smooth rotation damping via `Mathf.SmoothDampAngle`.
+  - Implements position smoothing via `Vector3.SmoothDamp` (`0.08s`).
+  - Updates in `LateUpdate()` to guarantee player locomotion and root motion are finalized.
+  - Automatically injects its transform into `PlayerController.SetCamera(transform)`.
+  - Operates independently in world space, eliminating orientation feedback loops.
+- **Automated Verification Harness (`CameraTestHarness.cs`):** Created runtime QA test harness in `Assets/_Project/Scripts/Camera/` testing mouse input, gamepad input, pitch clamping, target tracking, and player binding in Play Mode.
+- **Scene Setup Automation (`CameraPhase3Builder.cs`):** Added `RED MOON/Camera/Setup Test Scene Camera` menu tool to configure `Main Camera` with `CameraController`, `CameraConfig`, and `CameraTestHarness` in `PlayerTest.unity`.
+
+### Verified
+- C# compilation: 0 errors, 0 warnings.
+- Play Mode QA test harness execution in `PlayerTest.unity`:
+  - PlayerController binding: PASS (`PlayerController.CameraTransform` correctly bound).
+  - Mouse look input: PASS (ΔYaw=71.97°, ΔPitch=29.99°, ΔPos=3.99m).
+  - Gamepad look input: PASS (ΔYaw=11.97°, ΔPitch=7.99°, ΔPos=0.78m).
+  - Pitch limits clamping: PASS (strictly clamped within `[-35°, 65°]`).
+  - World-space focus follow: PASS (focus point tracked displacement by 1.98m).
+  - Overall harness result: `ALL PHASE 3.3 TESTS PASSED`.
+- Regression check on `Bootstrap.unity`: 0 errors, 0 warnings in Play Mode; build index 0 preserved.
+
+---
+
 ## Template for Future Entries
 
 ```

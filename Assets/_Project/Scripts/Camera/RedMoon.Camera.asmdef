@@ -1,8 +1,9 @@
-﻿{
+{
     "name":  "RedMoon.Camera",
     "rootNamespace":  "RedMoon.Camera",
     "references":  [
                        "RedMoon.Core",
+                       "RedMoon.Player",
                        "Unity.InputSystem"
                    ],
     "includePlatforms": [

@@ -1,6 +1,6 @@
 # RED MOON: THE LAST RIDER — Project Architecture
 
-**Document status:** Phase 3.2 complete (Camera Foundation & Configuration)  
+**Document status:** Phase 3.3 complete (Third-Person Camera Motor & Orbit Implementation)  
 **Engine:** Unity 6.6 (`6000.6.8f1`)  
 **Pipeline:** URP `17.6.0`  
 **Input:** Unity Input System `1.20.1`  
