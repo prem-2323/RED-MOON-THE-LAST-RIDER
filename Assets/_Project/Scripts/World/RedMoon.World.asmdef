@@ -1,13 +1,12 @@
-﻿{
+{
     "name":  "RedMoon.World",
     "rootNamespace":  "RedMoon.World",
     "references":  [
                        "RedMoon.Core",
                        "Unity.InputSystem"
                    ],
-    "includePlatforms":  {
-
-                         },
+    "includePlatforms":  [
+                         ],
     "excludePlatforms":  [
 
                          ],

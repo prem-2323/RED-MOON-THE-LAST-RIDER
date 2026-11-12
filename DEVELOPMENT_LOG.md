@@ -771,6 +771,72 @@ conflicts. No force-push or hard reset was used.
 
 ---
 
+## 2026-11-12 — Phase 5.1: Environment Foundation
+
+**Status:** Complete
+
+### Objective
+Create the first playable environment foundation for RED MOON — a dark, abandoned mountain region in a supernatural horror setting featuring a 500m × 500m mountainous terrain, a winding 500m mountain pass road, silhouette blockouts, and seamless player/horse integration.
+
+### Implemented
+- **Terrain Foundation (`Assets/_Project/Art/Environment/Terrain/TerrainData_MountainRegion.asset`):**
+  - Dimensions: $500\text{m} \times 120\text{m} \times 500\text{m}$.
+  - Heightmap Resolution: $513 \times 513$ (cell size $\approx 0.98\text{m}$, optimized for RTX 3050 4GB VRAM).
+  - Alphamap Resolution: $512 \times 512$.
+  - Layer: `Ground` (13), Tag: `Environment`. Attached `TerrainCollider` with generated `TerrainData`.
+  - Material: `M_Terrain_MountainRegion.mat` with `Universal Render Pipeline/Terrain/Lit` shader.
+  - Multi-octave procedural sculpting: Base valley elevation ($8\text{m} - 18\text{m}$), macro mountain ridges ($50\text{m} - 80\text{m}$), sharp arêtes, rolling hills, and micro soil roughness.
+  - Natural perimeter mountain boundaries: Outer $45\text{m}$ perimeter smoothly elevates to $95\text{m} - 110\text{m}$ impassable cliffs, enclosing the playable valley naturally.
+- **URP TerrainLayers & 1024x1024 Textures (`EnvironmentAssetGenerator.cs`):**
+  - **Layer 0 (`TL_DarkSoil_DeadGrass.terrainlayer`):** Dark damp soil with withered dead vegetation undertones ($1024\times 1024$ Albedo + Normal, $12\text{m}\times 12\text{m}$ tiling).
+  - **Layer 1 (`TL_MountainCliff_Rock.terrainlayer`):** Cold dark slate / fractured basalt cliff face ($1024\times 1024$ Albedo + Normal, $16\text{m}\times 16\text{m}$ tiling). Auto-blended on slopes $> 22^\circ$ and high mountain summits.
+  - **Layer 2 (`TL_MountainRoad_Dirt.terrainlayer`):** Packed road earth with pebble gravel and cart wheel ruts ($1024\times 1024$ Albedo + Normal, $8\text{m}\times 8\text{m}$ tiling).
+- **Winding Mountain Pass Road (`RoadSpline.cs` & Procedural Grading):**
+  - 10 Catmull-Rom spline waypoints traversing $507.1\text{m}$ from South-West overlook $(70, 16, 70)$ to North-East pass $(420, 18.5, 430)$.
+  - Road width: $5.0\text{m}$ with $3.0\text{m}$ soft shoulder transition.
+  - Procedural road grading: Terrain under road centerline ($d \le 2.5\text{m}$) is mathematically graded to road spline elevation with gentle $0.05\text{m}$ crown. Shoulders ($2.5\text{m} < d \le 5.5\text{m}$) use Hermite cubic blending. Guaranteed zero floating road sections and zero clipping cliffs.
+  - Maximum slope anywhere on the road is $2.2^\circ$ (well within horse $45^\circ$ and player $50^\circ$ CharacterController limits).
+  - Splatmap paints 100% road texture along corridor, softly feathering into soil and cliff rock.
+- **Environment Blockouts (`Environment_Blockouts`):**
+  - 6 Low-poly silhouette rock spires / crags positioned along perimeter mountain ridges and valley pass gateways on Layer 12 (`Environment`) with `M_CliffRock_Blockout.mat` and `MeshCollider` components.
+- **Player & Horse Staging & Integration:**
+  - Spawned at central crossroads (WP4: $230, 10.1, 230$), perfectly positioned on road.
+  - Main Camera with `CameraController` tracking player, configured with `Camera_Config.asset` (SphereCast collision detects Layer 12 `Environment` and Layer 13 `Ground`).
+- **Atmospheric Lighting:**
+  - Cool pale moonlight Directional Light (`Color(0.65, 0.72, 0.85)`, intensity 0.65, rotation $45^\circ, -40^\circ, 0^\circ$, soft shadows, 55m shadow distance).
+  - Atmospheric dark charcoal/slate trilight ambient lighting.
+- **Automated QA Suite (`EnvironmentTestRunner.cs`):**
+  - 12 comprehensive automated checks covering terrain, road, character grounding, mounting, locomotion, and camera collision.
+
+### Visual Rework & Topography Fix
+- **Eliminated Crater/Funnel Geometry:** Removed artificial 100m perimeter walls that made the terrain look like a sunken bowl. All outer borders now terminate smoothly at $y = 0.00\text{m}$, resting flush on the world plane.
+- **Expansive Valley Pass:** Broadened valley floor to $180\text{m} - 250\text{m}$ width with natural rolling meadows at $y \approx 3.5\text{m} - 6\text{m}$ and realistic mountain massifs rising up to $80\text{m}$.
+- **Faceted 3D Rock Crags:** Replaced primitive cube blockouts with organic low-poly 3D rock models (`Rock_Spire_01.obj`, `Rock_Crag_02.obj`) with normal maps and dark slate materials.
+- **Dedicated Road Surface Ribbon Mesh:** Generated procedural road mesh (`Road_VisualMesh`) conforming to the spline with dedicated material (`M_MountainRoad_Surface.mat`) offset $0.03\text{m}$ above terrain for crisp visual readability.
+- **Calibrated Lighting:** Directional Moonlight increased to intensity $1.20$ with silvery-blue tone and linear atmospheric fog (start 90m, end 420m).
+- **Cleaned Duplicate Object:** Removed duplicate empty `Terrain` object from scene hierarchy.
+
+### Verified
+- C# compilation: 0 errors, 0 warnings.
+- Automated QA suite: **ALL 12/12 TESTS PASSED**.
+- Live Unity Play Mode verification:
+  - Scene loads without errors (`EnvironmentTest.unity`).
+  - Player CharacterController grounded on terrain: $y = 10.12\text{m}$, terrain $10.07\text{m}$, diff $0.05\text{m}$ (`isGrounded = true`).
+  - Horse CharacterController grounded on terrain: $y = 10.11\text{m}$, terrain $10.06\text{m}$, diff $0.05\text{m}$ (`IsGrounded = true`).
+  - Player mounts horse via `E`: PASS (player parented to `RiderSocket`, camera smoothly switches target to `RiderFocusPoint`).
+  - Horse locomotion along winding road:
+    - Walk: $2.50\text{ m/s}$ (PASS)
+    - Trot: $5.00\text{ m/s}$ (PASS)
+    - Gallop: $9.00\text{ m/s}$ (PASS)
+    - Sprint: $13.50\text{ m/s}$ (PASS)
+    - Distance traversed: $42.2\text{m}$ along road, lateral deviation $1.76\text{m} \le 2.50\text{m}$ half-width. Zero sliding.
+  - Dismount via `E`: PASS (player lands grounded at terrain elevation $11.07\text{m}$, safe separation $1.30\text{m}$).
+  - Camera collision: detects terrain and boundaries (`collisionLayers: 12288`).
+  - Regressions: `Bootstrap.unity` loads with 0 errors at build index 0; `PlayerTest.unity` and `HorseTest.unity` remain functional.
+  - Console: 0 errors.
+
+---
+
 ## Template for Future Entries
 
 ```

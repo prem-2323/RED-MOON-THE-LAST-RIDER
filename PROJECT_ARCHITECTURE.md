@@ -1,6 +1,6 @@
 # RED MOON: THE LAST RIDER — Project Architecture
 
-**Document status:** Phase 4 complete (Complete Horse Development, Locomotion, Mounting & QA)  
+**Document status:** Phase 5.1 complete (Environment Foundation, Mountain Terrain & Road Spline, Player/Horse Integration)  
 **Engine:** Unity 6.6 (`6000.6.8f1`)  
 **Pipeline:** URP `17.6.0`  
 **Input:** Unity Input System `1.20.1`  
@@ -338,6 +338,40 @@ Tunable ScriptableObject parameters at `Assets/_Project/Settings/Camera/Camera_C
 - **Safe Dismount Validation:** Evaluates left and right dismount sockets using obstacle collision SphereCasts and downward ground Raycasts to ensure the player never clips into geometry or falls into voids.
 - **Camera Integration:** Seamlessly switches target between player and horse focus without teleportation snaps. Supports mouse look, gamepad look, shoulder switching and dynamic sprint FOV while mounted.
 - **Test Architecture:** Includes `HorseTestHarness.cs` validating all 29 automated QA criteria and immediate-mode debug UI (`HorseDebugUI.cs`).
+
+---
+
+## 5d. Environment & World Architecture
+
+### Design Philosophy
+- **Dark Mountain Wilderness:** Atmospheric dark fantasy mountain valley designed for continuous horse riding and exploration, sculpted with multi-octave Perlin and ridge noise.
+- **Target Hardware Optimization (RTX 3050 4GB VRAM):**
+  - Terrain dimensions: $500\text{m} \times 120\text{m} \times 500\text{m}$.
+  - Heightmap resolution: $513 \times 513$ (cell size $\approx 0.98\text{m}$).
+  - Splatmap alphamap resolution: $512 \times 512$.
+  - 3 URP TerrainLayers with $1024 \times 1024$ Albedo and Normal textures, low memory footprint.
+  - Shadow distance: 55m, single directional moonlight + dark slate ambient trilight.
+- **Winding Mountain Pass Road (`RoadSpline.cs`):**
+  - Continuous Catmull-Rom spline with 10 waypoints spanning $507.1\text{m}$ from South-West overlook $(70, 16, 70)$ to North-East pass $(420, 18.5, 430)$.
+  - Road width: $5.0\text{m}$ with $3.0\text{m}$ soft shoulder transition.
+  - Procedural road grading: Terrain under road centerline ($d \le 2.5\text{m}$) is mathematically graded to road spline elevation with gentle $0.05\text{m}$ crown. Shoulders ($2.5\text{m} < d \le 5.5\text{m}$) use Hermite cubic blending. Guaranteed zero floating road sections and zero clipping cliffs.
+  - Maximum slope anywhere on the road is $2.2^\circ$ (well within horse $45^\circ$ and player $50^\circ$ CharacterController limits).
+  - Splatmap paints 100% road texture along corridor, softly feathering into soil and cliff rock.
+- **Splatmap & Terrain Layer Strategy:**
+  - **Layer 0 (`TL_DarkSoil_DeadGrass`):** Valley floor soil and dead grass ($12\text{m}\times 12\text{m}$ tiling).
+  - **Layer 1 (`TL_MountainCliff_Rock`):** Fractured slate/basalt cliff rock ($16\text{m}\times 16\text{m}$ tiling) auto-blended on slopes $> 22^\circ$ and summits $> 55\text{m}$.
+  - **Layer 2 (`TL_MountainRoad_Dirt`):** Packed road earth with pebble gravel and cart wheel ruts ($8\text{m}\times 8\text{m}$ tiling).
+- **Environment Blockouts & Boundaries:**
+  - Natural perimeter mountain walls ($95\text{m} - 110\text{m}$) form impassable outer boundary barriers.
+  - 6 Low-poly silhouette rock spires / crags on Layer 12 (`Environment`) with `MeshCollider` components frame the mountain skyline and valley entrance defiles.
+- **Physics & Layer Allocation:**
+  - Terrain GameObject on Layer 13 (`Ground`), Tag `Environment`. Attached `TerrainCollider`.
+  - RoadSpline GameObject on Layer 13 (`Ground`), Tag `Environment`.
+  - Environment Blockouts on Layer 12 (`Environment`), Tag `Environment`.
+  - CameraController SphereCast detects both Layer 12 (`Environment`) and Layer 13 (`Ground`) (`collisionLayers: 12288`).
+- **Test Architecture:**
+  - Includes `EnvironmentTestRunner.cs` in `RedMoon.Editor` validating all 12 QA requirements.
+  - Active development scene: `Assets/_Project/Scenes/Development/EnvironmentTest.unity`.
 
 ---
 

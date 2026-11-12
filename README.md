@@ -2,7 +2,7 @@
 
 A cinematic, realistic 3D open-world horror adventure built in Unity 6.
 
-> **Status:** Phase 4 — Complete Horse Development complete (locomotion, 4-tier speeds, mounting/dismounting, camera integration, QA test harness).  
+> **Status:** Phase 5.1 — Environment Foundation complete (mountain terrain, winding road spline, 3 URP terrain layers, player/horse integration, QA test suite).  
 > **Engine:** Unity 6.6 (`6000.6.8f1`)  
 > **Render pipeline:** Universal Render Pipeline (URP) `17.6.0`  
 > **Input:** Unity Input System `1.20.1`  
@@ -263,6 +263,18 @@ Rules:
 | 2.0 Main character development | Complete |
 | 3.0 Third-person camera system | Complete |
 | 4.0 Complete horse development | Complete |
+| 5.1 Environment foundation | Complete |
+
+Phase 5.1 verified:
+- Large $500\text{m} \times 120\text{m} \times 500\text{m}$ mountainous terrain sculpted with multi-octave procedural heightmaps and impassable perimeter mountain walls ($95\text{m} - 110\text{m}$).
+- Winding mountain pass road ($507.1\text{m}$ length, $5.0\text{m}$ width, $3.0\text{m}$ shoulder) graded seamlessly into terrain with $2.2^\circ$ max slope and zero floating/clipping artifacts.
+- 3 URP TerrainLayers with $1024 \times 1024$ Albedo and Normal textures (Dark Soil, Mountain Cliff Rock, Mountain Dirt Road).
+- 6 Silhouette mountain crags on Layer 12 (`Environment`) framing the dark mountain skyline.
+- Player and Horse integrated at central staging area ($230, 10.1, 230$), fully grounded with CharacterControllers.
+- Real Play Mode locomotion verified: Horse navigates road at Walk ($2.5\text{ m/s}$), Trot ($5.0\text{ m/s}$), Gallop ($9.0\text{ m/s}$), and Sprint ($13.5\text{ m/s}$).
+- Player mounting and dismounting verified with smooth camera tracking and terrain grounding.
+- Automated QA suite: 12/12 tests passed in `EnvironmentTest.unity`.
+- Regression: `Bootstrap.unity`, `PlayerTest.unity`, and `HorseTest.unity` remain 100% functional.
 
 Phase 4 verified:
 - Independent horse entity with CharacterController locomotion motor.

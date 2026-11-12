@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14c69c1183431b549a0c6afc7f8053b7, type: 3}
+  m_Name: Environment_Config
+  m_EditorClassIdentifier: RedMoon.World::RedMoon.World.EnvironmentConfig
+  terrainWidth: 500
+  terrainLength: 500
+  terrainHeight: 120
+  heightmapResolution: 513
+  alphamapResolution: 512
+  detailResolution: 512
+  valleyBaseHeight: 10
+  mountainPeakHeight: 95
+  cliffSlopeAngleThreshold: 25
+  roadWidth: 5
+  roadShoulderWidth: 3
+  maxRoadSlope: 12
+  spawnPosition: {x: 230, y: 10.5, z: 230}
+  spawnYaw: 65
+  directionalLightColor: {r: 0.65, g: 0.72, b: 0.85, a: 1}
+  directionalLightIntensity: 0.65
+  directionalLightRotation: {x: 45, y: -40, z: 0}
+  ambientEquatorColor: {r: 0.08, g: 0.09, b: 0.12, a: 1}
+  ambientGroundColor: {r: 0.04, g: 0.04, b: 0.05, a: 1}
