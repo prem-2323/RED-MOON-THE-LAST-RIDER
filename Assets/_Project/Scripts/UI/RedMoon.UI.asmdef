@@ -1,0 +1,27 @@
+﻿{
+    "name":  "RedMoon.UI",
+    "rootNamespace":  "RedMoon.UI",
+    "references":  [
+                       "RedMoon.Core",
+                       "Unity.InputSystem"
+                   ],
+    "includePlatforms":  {
+
+                         },
+    "excludePlatforms":  [
+
+                         ],
+    "allowUnsafeCode":  false,
+    "overrideReferences":  false,
+    "precompiledReferences":  [
+
+                              ],
+    "autoReferenced":  true,
+    "defineConstraints":  [
+
+                          ],
+    "versionDefines":  [
+
+                       ],
+    "noEngineReferences":  false
+}
