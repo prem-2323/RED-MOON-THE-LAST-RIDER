@@ -298,6 +298,15 @@ cross-collisions remain enabled.
   no exceptions. The process was then terminated intentionally.
 - Play Mode smoke test: Bootstrap loaded, console remained clean, play mode
   exited normally.
+- Final scene validation: entering Play Mode caused URP to add the required
+  `UniversalAdditionalCameraData` component to the Bootstrap Main Camera. The
+  scene was saved, and an incremental Windows development build revalidated the
+  final scene state:
+  - Errors: 0
+  - Warnings: 14 (empty domain assemblies)
+  - Duration: 8.24 seconds
+  - Built-player smoke test repeated: process stayed alive, Input System and
+    PhysX initialized, no exceptions. The process was terminated intentionally.
 - Windows IL2CPP support is not installed and was not required for the Mono
   development build.
 
@@ -316,6 +325,7 @@ cross-collisions remain enabled.
 | Audio mixer validation | PASS |
 | Build Settings validation | PASS |
 | Windows x64 development build | PASS (0 errors) |
+| Final post-save incremental build | PASS (0 errors) |
 | Built-player launch smoke test | PASS |
 | MCP connection and operations | PASS |
 | Console inspection | PASS (warnings documented) |
@@ -338,6 +348,7 @@ cross-collisions remain enabled.
 - `Assets/_Project/Scripts/Editor/RedMoonQualityConfigurator.cs`
 - `Assets/_Project/Scripts/Editor/AudioMixerBuilder.cs`
 - `Assets/_Project/Scripts/Editor/RedMoon.Editor.asmdef`
+- `Assets/_Project/Scenes/Bootstrap/Bootstrap.unity` (URP camera data saved)
 - `ProjectSettings/TagManager.asset`
 - `ProjectSettings/DynamicsManager.asset`
 - `ProjectSettings/QualitySettings.asset`
